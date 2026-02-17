@@ -5,6 +5,7 @@ import { useEditMode } from '../context/EditModeContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import ImageUploadWithResize from './ImageUploadWithResize';
+import { uploadImage } from '../lib/storage';
 
 interface Collection {
   id: string;
@@ -21,6 +22,7 @@ export default function CollectionsGrid() {
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchCollections();
@@ -113,6 +115,24 @@ export default function CollectionsGrid() {
       alert('Failed to save collection');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleImageUpload = async (file: File, shouldResize: boolean) => {
+    if (!editingCollection) return;
+
+    setUploading(true);
+    try {
+      const url = await uploadImage(file, {
+        resize: shouldResize,
+        context: 'category'
+      });
+      setEditingCollection({ ...editingCollection, image_url: url });
+    } catch (err) {
+      console.error('Failed to upload image:', err);
+      alert('Failed to upload image');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -253,12 +273,9 @@ export default function CollectionsGrid() {
                 <label className="block text-sm font-medium mb-2">Collection Image</label>
                 <ImageUploadWithResize
                   currentImageUrl={editingCollection.image_url}
-                  onImageUploaded={(url) =>
-                    setEditingCollection({ ...editingCollection, image_url: url })
-                  }
-                  bucketName="categories"
-                  maxWidth={1200}
-                  maxHeight={900}
+                  context="category"
+                  onFileSelect={handleImageUpload}
+                  uploading={uploading}
                 />
               </div>
 

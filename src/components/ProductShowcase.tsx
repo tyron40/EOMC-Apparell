@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 import ImageUploadWithResize from './ImageUploadWithResize';
+import { uploadImage } from '../lib/storage';
 
 interface Product {
   id: string;
@@ -23,6 +24,7 @@ export default function ProductShowcase() {
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchFeaturedProducts();
@@ -92,6 +94,24 @@ export default function ProductShowcase() {
       alert('Failed to update product');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleImageUpload = async (file: File, shouldResize: boolean) => {
+    if (!editingProduct) return;
+
+    setUploading(true);
+    try {
+      const url = await uploadImage(file, {
+        resize: shouldResize,
+        context: 'product'
+      });
+      setEditingProduct({ ...editingProduct, image_url: url });
+    } catch (err) {
+      console.error('Failed to upload image:', err);
+      alert('Failed to upload image');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -229,12 +249,9 @@ export default function ProductShowcase() {
                 <label className="block text-sm font-medium mb-2">Product Image</label>
                 <ImageUploadWithResize
                   currentImageUrl={editingProduct.image_url}
-                  onImageUploaded={(url) =>
-                    setEditingProduct({ ...editingProduct, image_url: url })
-                  }
-                  bucketName="products"
-                  maxWidth={1200}
-                  maxHeight={1200}
+                  context="product"
+                  onFileSelect={handleImageUpload}
+                  uploading={uploading}
                 />
               </div>
 
