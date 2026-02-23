@@ -1,7 +1,6 @@
 import HeroCarousel from '../components/HeroCarousel';
 import PhotoGallery from '../components/PhotoGallery';
 import CollectionsGrid from '../components/CollectionsGrid';
-import VideoBillboard from '../components/VideoBillboard';
 import ProductShowcase from '../components/ProductShowcase';
 import Testimonials from '../components/Testimonials';
 import VideoSection from '../components/VideoSection';
@@ -23,9 +22,6 @@ export default function Home() {
 
       {/* Auto-playing Video Section */}
       <VideoSection />
-
-      {/* Video/Billboard Section - Full width brand showcase */}
-      <VideoBillboard />
 
       {/* Testimonials - Customer reviews */}
       <Testimonials />

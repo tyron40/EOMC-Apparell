@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Package, ShoppingBag, AlertCircle, LayoutDashboard, Settings } from 'lucide-react';
+import { Package, ShoppingBag, AlertCircle, LayoutDashboard, Settings, Image, Video, MessageSquare, Layout } from 'lucide-react';
+import { useEditMode } from '../../context/EditModeContext';
 import ProductManager from './ProductManager';
 import InventoryManager from './InventoryManager';
 import OrdersManager from './OrdersManager';
@@ -9,6 +10,7 @@ import AdminSettings from './Settings';
 
 export default function AdminDashboard() {
   const { user, loading } = useAuth();
+  const { toggleEditMode } = useEditMode();
   const location = useLocation();
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -134,9 +136,9 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   
-                  {/* Quick Actions */}
-                  <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
-                    <h2 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Quick Actions</h2>
+                  {/* Quick Actions - Store Management */}
+                  <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-4 md:mb-8">
+                    <h2 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Store Management</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                       <Link
                         to="/admin/products"
@@ -158,6 +160,101 @@ export default function AdminDashboard() {
                           Manage stock levels and availability
                         </p>
                       </Link>
+                      <Link
+                        to="/admin/orders"
+                        className="p-4 md:p-5 border-2 border-gray-200 rounded-lg hover:border-black hover:shadow-md transition-all group"
+                      >
+                        <ShoppingBag className="w-7 h-7 md:w-8 md:h-8 mb-2 group-hover:scale-110 transition-transform" />
+                        <h3 className="font-semibold text-sm md:text-base">View Orders</h3>
+                        <p className="text-xs md:text-sm text-gray-600 mt-1">
+                          Process and manage customer orders
+                        </p>
+                      </Link>
+                      <Link
+                        to="/admin/settings"
+                        className="p-4 md:p-5 border-2 border-gray-200 rounded-lg hover:border-black hover:shadow-md transition-all group"
+                      >
+                        <Settings className="w-7 h-7 md:w-8 md:h-8 mb-2 group-hover:scale-110 transition-transform" />
+                        <h3 className="font-semibold text-sm md:text-base">Site Settings</h3>
+                        <p className="text-xs md:text-sm text-gray-600 mt-1">
+                          Manage logo, pages, and account
+                        </p>
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Content Editing */}
+                  <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
+                    <h2 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Content Editing</h2>
+                    <p className="text-xs md:text-sm text-gray-600 mb-4">
+                      Enable Edit Mode to modify content directly on the homepage. Click any edit button to customize sections.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                      <button
+                        onClick={() => {
+                          toggleEditMode();
+                          window.location.href = '/';
+                        }}
+                        className="p-4 md:p-5 border-2 border-gray-200 rounded-lg hover:border-black hover:shadow-md transition-all group text-left"
+                      >
+                        <Layout className="w-7 h-7 md:w-8 md:h-8 mb-2 group-hover:scale-110 transition-transform text-purple-600" />
+                        <h3 className="font-semibold text-sm md:text-base">Hero Carousel</h3>
+                        <p className="text-xs md:text-sm text-gray-600 mt-1">
+                          Edit hero slides and images
+                        </p>
+                      </button>
+                      <button
+                        onClick={() => {
+                          toggleEditMode();
+                          window.location.href = '/';
+                        }}
+                        className="p-4 md:p-5 border-2 border-gray-200 rounded-lg hover:border-black hover:shadow-md transition-all group text-left"
+                      >
+                        <Image className="w-7 h-7 md:w-8 md:h-8 mb-2 group-hover:scale-110 transition-transform text-green-600" />
+                        <h3 className="font-semibold text-sm md:text-base">Photo Gallery</h3>
+                        <p className="text-xs md:text-sm text-gray-600 mt-1">
+                          Manage gallery images
+                        </p>
+                      </button>
+                      <button
+                        onClick={() => {
+                          toggleEditMode();
+                          window.location.href = '/';
+                        }}
+                        className="p-4 md:p-5 border-2 border-gray-200 rounded-lg hover:border-black hover:shadow-md transition-all group text-left"
+                      >
+                        <Video className="w-7 h-7 md:w-8 md:h-8 mb-2 group-hover:scale-110 transition-transform text-red-600" />
+                        <h3 className="font-semibold text-sm md:text-base">Video Section</h3>
+                        <p className="text-xs md:text-sm text-gray-600 mt-1">
+                          Upload and edit video content
+                        </p>
+                      </button>
+                      <button
+                        onClick={() => {
+                          toggleEditMode();
+                          window.location.href = '/';
+                        }}
+                        className="p-4 md:p-5 border-2 border-gray-200 rounded-lg hover:border-black hover:shadow-md transition-all group text-left"
+                      >
+                        <MessageSquare className="w-7 h-7 md:w-8 md:h-8 mb-2 group-hover:scale-110 transition-transform text-blue-600" />
+                        <h3 className="font-semibold text-sm md:text-base">Testimonials</h3>
+                        <p className="text-xs md:text-sm text-gray-600 mt-1">
+                          Add and edit customer reviews
+                        </p>
+                      </button>
+                      <button
+                        onClick={() => {
+                          toggleEditMode();
+                          window.location.href = '/';
+                        }}
+                        className="p-4 md:p-5 border-2 border-gray-200 rounded-lg hover:border-black hover:shadow-md transition-all group text-left"
+                      >
+                        <Layout className="w-7 h-7 md:w-8 md:h-8 mb-2 group-hover:scale-110 transition-transform text-indigo-600" />
+                        <h3 className="font-semibold text-sm md:text-base">Collections Grid</h3>
+                        <p className="text-xs md:text-sm text-gray-600 mt-1">
+                          Manage category displays
+                        </p>
+                      </button>
                     </div>
                   </div>
                 </div>
