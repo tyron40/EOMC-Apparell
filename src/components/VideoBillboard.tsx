@@ -16,7 +16,7 @@ export default function VideoBillboard() {
   return (
     <>
       {showEditor && <VideoBillboardEditor onClose={() => setShowEditor(false)} />}
-      <section className="relative w-full h-[500px] overflow-hidden">
+      <section className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden">
         {isEditMode && user?.isAdmin && (
           <button
             onClick={handleEditBillboard}
@@ -35,14 +35,14 @@ export default function VideoBillboard() {
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-          <div className="text-center text-white">
-            <div className="w-24 h-24 mx-auto mb-4 bg-red-600 rounded-full flex items-center justify-center">
-              <svg viewBox="0 0 24 24" className="w-12 h-12 text-white fill-current">
+          <div className="text-center text-white px-4">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto mb-3 sm:mb-4 bg-red-600 rounded-full flex items-center justify-center">
+              <svg viewBox="0 0 24 24" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white fill-current">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
               </svg>
             </div>
-            <h2 className="text-5xl md:text-7xl font-bold mb-2">EOMC</h2>
-            <p className="text-xl md:text-2xl tracking-widest">EYES OPEN MOUTHS CLOSED</p>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-2">EOMC</h2>
+            <p className="text-sm sm:text-lg md:text-xl lg:text-2xl tracking-widest">EYES OPEN MOUTHS CLOSED</p>
           </div>
         </div>
       </section>

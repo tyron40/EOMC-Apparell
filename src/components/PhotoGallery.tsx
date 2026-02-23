@@ -123,7 +123,7 @@ export default function PhotoGallery() {
 
   if (loading) {
     return (
-      <section className="py-4 bg-white">
+      <section className="py-6 sm:py-8 md:py-10 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
@@ -142,7 +142,7 @@ export default function PhotoGallery() {
   return (
     <>
       {showEditor && <GalleryEditor onClose={() => setShowEditor(false)} />}
-      <section className="py-4 bg-white relative">
+      <section className="py-6 sm:py-8 md:py-10 bg-white relative">
         {isEditMode && user?.isAdmin && (
           <button
             onClick={handleEditGallery}

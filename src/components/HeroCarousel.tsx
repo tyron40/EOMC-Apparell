@@ -117,7 +117,7 @@ export default function HeroCarousel() {
 
   if (loading || images.length === 0) {
     return (
-      <div className="w-full h-[600px] bg-gray-200 animate-pulse" />
+      <div className="w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[700px] bg-gray-200 animate-pulse" />
     );
   }
 
@@ -151,14 +151,31 @@ export default function HeroCarousel() {
           opacity: 1;
           color: white;
         }
-        .hero-carousel .slick-slide > div {
-          height: 600px;
+        @media (max-width: 640px) {
+          .hero-carousel .slick-slide > div {
+            height: 400px;
+          }
+        }
+        @media (min-width: 640px) and (max-width: 768px) {
+          .hero-carousel .slick-slide > div {
+            height: 500px;
+          }
+        }
+        @media (min-width: 768px) and (max-width: 1024px) {
+          .hero-carousel .slick-slide > div {
+            height: 600px;
+          }
+        }
+        @media (min-width: 1024px) {
+          .hero-carousel .slick-slide > div {
+            height: 700px;
+          }
         }
       `}</style>
       <Slider {...settings}>
         {images.map((image) => (
           <div key={image.id} className="relative">
-            <div className="w-full h-[600px] relative overflow-hidden">
+            <div className="w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[700px] relative overflow-hidden">
               <img
                 src={image.image_url}
                 alt={image.title || 'Hero slide'}
@@ -169,12 +186,12 @@ export default function HeroCarousel() {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center text-white px-4">
                     {image.title && (
-                      <h2 className="text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
+                      <h2 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 drop-shadow-lg">
                         {image.title}
                       </h2>
                     )}
                     {image.subtitle && (
-                      <p className="text-xl md:text-2xl drop-shadow-lg">
+                      <p className="text-base sm:text-lg md:text-xl lg:text-2xl drop-shadow-lg">
                         {image.subtitle}
                       </p>
                     )}

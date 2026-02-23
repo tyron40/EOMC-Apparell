@@ -11,7 +11,7 @@ export default function VideoSection() {
   };
 
   return (
-    <section className="relative w-full h-[400px] md:h-[500px] overflow-hidden bg-black">
+    <section className="relative w-full h-[350px] sm:h-[450px] md:h-[550px] lg:h-[650px] overflow-hidden bg-black">
       {isEditMode && user?.isAdmin && (
         <button
           onClick={handleEditVideo}
@@ -39,9 +39,9 @@ export default function VideoSection() {
       
       {/* Overlay with EOMC branding */}
       <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-        <div className="text-center text-white">
-          <h2 className="text-4xl md:text-6xl font-bold mb-4 tracking-wider">EOMC</h2>
-          <p className="text-lg md:text-xl tracking-widest">EYES OPEN MOUTHS CLOSED</p>
+        <div className="text-center text-white px-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 tracking-wider">EOMC</h2>
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl tracking-widest">EYES OPEN MOUTHS CLOSED</p>
         </div>
       </div>
     </section>
