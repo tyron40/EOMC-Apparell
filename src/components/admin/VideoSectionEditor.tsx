@@ -24,6 +24,7 @@ export default function VideoSectionEditor({ onClose }: VideoSectionEditorProps)
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -70,40 +71,79 @@ export default function VideoSectionEditor({ onClose }: VideoSectionEditorProps)
     if (!e.target.files || e.target.files.length === 0) return;
 
     const file = e.target.files[0];
-    if (!file.type.startsWith('video/')) {
-      setError('Please upload a video file');
+
+    // Validate file type
+    const validVideoTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-msvideo'];
+    if (!file.type.startsWith('video/') && !validVideoTypes.includes(file.type)) {
+      setError('Please upload a valid video file (MP4, WebM, OGG, MOV, or AVI)');
+      return;
+    }
+
+    // Check file size (limit to 500MB)
+    const maxSize = 500 * 1024 * 1024; // 500MB in bytes
+    if (file.size > maxSize) {
+      setError('Video file is too large. Maximum size is 500MB. Please compress your video or use a smaller file.');
       return;
     }
 
     setUploading(true);
+    setUploadProgress(0);
     setError(null);
+    setSuccessMessage(null);
 
     try {
-      const fileExt = file.name.split('.').pop();
+      // Get file extension, default to mp4 if not found
+      const fileExt = file.name.split('.').pop() || 'mp4';
       const fileName = `video-${Date.now()}.${fileExt}`;
       const filePath = `videos/${fileName}`;
 
-      const { error: uploadError, data } = await supabase.storage
+      console.log('Starting video upload:', { fileName, fileSize: file.size, fileType: file.type });
+
+      // Upload with progress tracking simulation
+      const uploadInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(uploadInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 500);
+
+      const { error: uploadError, data: uploadData } = await supabase.storage
         .from('site-assets')
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
         });
 
-      if (uploadError) throw uploadError;
+      clearInterval(uploadInterval);
+      setUploadProgress(100);
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error(uploadError.message || 'Failed to upload video');
+      }
+
+      console.log('Upload successful:', uploadData);
 
       const { data: { publicUrl } } = supabase.storage
         .from('site-assets')
         .getPublicUrl(filePath);
 
+      console.log('Public URL:', publicUrl);
+
       setVideoData(prev => prev ? { ...prev, video_url: publicUrl } : null);
-      setSuccessMessage('Video uploaded successfully');
-      setTimeout(() => setSuccessMessage(null), 3000);
+      setSuccessMessage('Video uploaded successfully! You can now preview it below.');
+      setTimeout(() => setSuccessMessage(null), 5000);
     } catch (err: any) {
       console.error('Error uploading video:', err);
-      setError(err.message || 'Failed to upload video');
+      setError(err.message || 'Failed to upload video. Please check your internet connection and try again.');
     } finally {
       setUploading(false);
+      setUploadProgress(0);
+      // Reset the file input
+      e.target.value = '';
     }
   };
 
@@ -215,17 +255,43 @@ export default function VideoSectionEditor({ onClose }: VideoSectionEditorProps)
 
           <div>
             <label className="block text-sm font-medium mb-2">Upload Video File</label>
-            <label className="flex items-center justify-center w-full px-4 py-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-black transition-colors">
-              <div className="text-center">
-                <Video className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                <span className="text-sm text-gray-600">
-                  {uploading ? 'Uploading...' : 'Click to upload video'}
-                </span>
-                <p className="text-xs text-gray-500 mt-1">MP4, WebM, or OGG</p>
+            <label className={`flex items-center justify-center w-full px-4 py-8 border-2 border-dashed rounded-lg transition-all ${
+              uploading ? 'border-blue-500 bg-blue-50 cursor-not-allowed' : 'border-gray-300 cursor-pointer hover:border-black hover:bg-gray-50'
+            }`}>
+              <div className="text-center w-full">
+                {uploading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                    <span className="text-sm font-medium text-blue-600">
+                      Uploading... {uploadProgress}%
+                    </span>
+                    <div className="w-full bg-gray-200 rounded-full h-2 mt-3 max-w-xs mx-auto">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">Please wait, this may take a moment...</p>
+                  </>
+                ) : (
+                  <>
+                    <Video className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                    <span className="text-sm text-gray-600 font-medium">
+                      Click or tap to select video
+                    </span>
+                    <p className="text-xs text-gray-500 mt-1">
+                      MP4, WebM, MOV, or OGG (max 500MB)
+                    </p>
+                    <p className="text-xs text-blue-600 mt-2 font-medium">
+                      Select from gallery or record new video
+                    </p>
+                  </>
+                )}
               </div>
               <input
                 type="file"
-                accept="video/*"
+                accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo,video/*"
+                capture="environment"
                 onChange={handleVideoUpload}
                 disabled={uploading}
                 className="hidden"
