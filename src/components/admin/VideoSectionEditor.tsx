@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Save, Upload, Video } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import ImageUploadWithResize from '../ImageUploadWithResize';
 
 interface VideoSectionData {
   id: string;
@@ -145,10 +144,6 @@ export default function VideoSectionEditor({ onClose }: VideoSectionEditorProps)
       // Reset the file input
       e.target.value = '';
     }
-  };
-
-  const handlePosterUpload = (url: string) => {
-    setVideoData(prev => prev ? { ...prev, poster_url: url } : null);
   };
 
   const handleSave = async () => {
@@ -304,22 +299,14 @@ export default function VideoSectionEditor({ onClose }: VideoSectionEditorProps)
               <label className="block text-sm font-medium mb-2">Video Preview</label>
               <video
                 src={videoData.video_url}
-                poster={videoData.poster_url || undefined}
                 controls
                 className="w-full rounded-lg"
               />
+              <p className="text-sm text-gray-500 mt-2">
+                Preview how your video will look. The video will autoplay on the live site.
+              </p>
             </div>
           )}
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Poster Image (Thumbnail)</label>
-            <ImageUploadWithResize
-              currentImageUrl={videoData?.poster_url || undefined}
-              onImageUploaded={handlePosterUpload}
-              storageBucket="site-assets"
-              storagePath="posters"
-            />
-          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>

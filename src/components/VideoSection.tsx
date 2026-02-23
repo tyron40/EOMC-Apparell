@@ -103,7 +103,6 @@ export default function VideoSection() {
           loop={videoData.loop}
           playsInline
           className="w-full h-full object-cover"
-          poster={videoData.poster_url || undefined}
         >
           <source src={videoData.video_url} type="video/mp4" />
           Your browser does not support the video tag.
