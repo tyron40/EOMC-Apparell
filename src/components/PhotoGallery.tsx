@@ -108,10 +108,12 @@ export default function PhotoGallery() {
         }
       },
       {
-        breakpoint: 480,
+        breakpoint: 640,
         settings: {
-          slidesToShow: 2,
+          slidesToShow: 1,
           slidesToScroll: 1,
+          centerMode: true,
+          centerPadding: '20px',
         }
       }
     ]
@@ -142,7 +144,7 @@ export default function PhotoGallery() {
   return (
     <>
       {showEditor && <GalleryEditor onClose={() => setShowEditor(false)} />}
-      <section className="py-6 sm:py-8 md:py-10 bg-white relative">
+      <section className="py-8 sm:py-10 md:py-12 bg-white relative">
         {isEditMode && user?.isAdmin && (
           <button
             onClick={handleEditGallery}
@@ -155,10 +157,10 @@ export default function PhotoGallery() {
             </span>
           </button>
         )}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
           <Slider {...settings}>
             {images.map((image) => (
-              <div key={image.id} className="px-2">
+              <div key={image.id} className="px-1 sm:px-2">
                 <div className="relative aspect-square overflow-hidden rounded-lg group cursor-pointer">
                   <img
                     src={image.image_url}
