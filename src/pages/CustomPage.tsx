@@ -137,6 +137,57 @@ export default function CustomPage() {
     setUploadedImages(uploadedImages.filter((_, i) => i !== index));
   };
 
+  const ensureCategory = async () => {
+    if (!page) return null;
+
+    if (page.category_id) {
+      return page.category_id;
+    }
+
+    try {
+      const categorySlug = `${page.slug}-category`;
+      const { data: existingCategory } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('slug', categorySlug)
+        .maybeSingle();
+
+      if (existingCategory) {
+        await supabase
+          .from('custom_pages')
+          .update({ category_id: existingCategory.id })
+          .eq('id', page.id);
+
+        setPage({ ...page, category_id: existingCategory.id });
+        return existingCategory.id;
+      }
+
+      const { data: newCategory, error: categoryError } = await supabase
+        .from('categories')
+        .insert({
+          name: page.title,
+          slug: categorySlug,
+          description: `Products for ${page.title}`,
+          is_active: true
+        })
+        .select()
+        .single();
+
+      if (categoryError) throw categoryError;
+
+      await supabase
+        .from('custom_pages')
+        .update({ category_id: newCategory.id })
+        .eq('id', page.id);
+
+      setPage({ ...page, category_id: newCategory.id });
+      return newCategory.id;
+    } catch (err) {
+      console.error('Failed to create category:', err);
+      return null;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
@@ -146,8 +197,9 @@ export default function CustomPage() {
       return;
     }
 
-    if (!page?.category_id) {
-      setMessage({ type: 'error', text: 'No category assigned to this page' });
+    const categoryId = await ensureCategory();
+    if (!categoryId) {
+      setMessage({ type: 'error', text: 'Failed to create category' });
       return;
     }
 
@@ -156,7 +208,7 @@ export default function CustomPage() {
       slug: formData.slug,
       description: formData.description,
       price: parseFloat(formData.price),
-      category_id: page.category_id,
+      category_id: categoryId,
       image_url: uploadedImages[0],
       images: uploadedImages,
       sizes: formData.sizes,
@@ -171,9 +223,7 @@ export default function CustomPage() {
       const { error } = await supabase.from('products').insert(productData);
       if (error) throw error;
       setMessage({ type: 'success', text: 'Product created successfully!' });
-      if (page.category_id) {
-        await loadProducts(page.category_id);
-      }
+      await loadProducts(categoryId);
       setTimeout(() => {
         resetForm();
       }, 1500);
@@ -230,7 +280,7 @@ export default function CustomPage() {
             <div className="mt-8 sm:mt-12">
               <div className="flex justify-between items-center mb-6 sm:mb-8">
                 <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Products</h2>
-                {isEditMode && user?.isAdmin && page.category_id && (
+                {isEditMode && user?.isAdmin && (
                   <button
                     onClick={() => setShowProductModal(true)}
                     className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
@@ -242,13 +292,16 @@ export default function CustomPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {products.map((product) => (
-                  <ProductCard key={product.id} product={product} onUpdate={() => page.category_id && loadProducts(page.category_id)} />
+                  <ProductCard key={product.id} product={product} onUpdate={async () => {
+                    const categoryId = page.category_id || await ensureCategory();
+                    if (categoryId) await loadProducts(categoryId);
+                  }} />
                 ))}
               </div>
             </div>
           )}
 
-          {isEditMode && user?.isAdmin && products.length === 0 && page.category_id && (
+          {isEditMode && user?.isAdmin && products.length === 0 && (
             <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-lg text-center">
               <p className="text-sm text-blue-800 mb-4">
                 <strong>No products yet.</strong> Add your first product to this collection.
@@ -260,15 +313,6 @@ export default function CustomPage() {
                 <Plus className="w-5 h-5" />
                 Add Product
               </button>
-            </div>
-          )}
-
-          {isEditMode && user?.isAdmin && products.length === 0 && !page.category_id && (
-            <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-800">
-                <strong>Tip:</strong> To display products on this page, go to Admin Settings and assign a category to this page.
-                Products from that category will automatically appear here.
-              </p>
             </div>
           )}
         </div>
