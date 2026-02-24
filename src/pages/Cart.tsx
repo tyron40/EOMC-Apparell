@@ -1,10 +1,63 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { Trash2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useEditMode } from '../context/EditModeContext';
+import { supabase } from '../lib/supabase';
+import { Trash2, Edit3, X } from 'lucide-react';
+import { Product } from '../types';
 
 export default function Cart() {
   const { cartItems, removeFromCart, updateQuantity, cartTotal } = useCart();
+  const { user } = useAuth();
+  const { isEditMode } = useEditMode();
   const navigate = useNavigate();
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editData, setEditData] = useState({
+    name: '',
+    price: 0,
+    description: '',
+    image_url: ''
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setEditData({
+      name: product.name,
+      price: product.price,
+      description: product.description || '',
+      image_url: product.image_url
+    });
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({
+          name: editData.name,
+          price: parseFloat(editData.price.toString()),
+          description: editData.description,
+          image_url: editData.image_url
+        })
+        .eq('id', editingProduct.id);
+
+      if (error) throw error;
+
+      setEditingProduct(null);
+      window.location.reload();
+    } catch (err) {
+      console.error('Failed to update product:', err);
+      alert('Failed to update product');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (cartItems.length === 0) {
     return (
@@ -33,12 +86,25 @@ export default function Cart() {
             <div className="space-y-4">
               {cartItems.map((item) => (
                 <div key={item.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 flex gap-3 sm:gap-4">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative">
                     <img
                       src={item.product?.image_url}
                       alt={item.product?.name}
-                      className="w-full h-full object-contain"
+                      className={`w-full h-full object-${item.product?.image_fit || 'contain'}`}
+                      style={{
+                        transform: `scale(${item.product?.zoom || 1}) translate(${item.product?.position_x || 0}%, ${item.product?.position_y || 0}%)`,
+                        transformOrigin: 'center center'
+                      }}
                     />
+                    {isEditMode && user?.isAdmin && item.product && (
+                      <button
+                        onClick={() => handleEditProduct(item.product!)}
+                        className="absolute top-1 right-1 bg-black text-white p-1 rounded-full hover:bg-gray-800 transition-colors shadow-lg z-10"
+                        title="Edit product"
+                      >
+                        <Edit3 className="w-3 h-3" />
+                      </button>
+                    )}
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -117,6 +183,93 @@ export default function Cart() {
           </div>
         </div>
       </div>
+
+      {editingProduct && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold">Edit Product in Cart</h3>
+              <button
+                onClick={() => setEditingProduct(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Product Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editData.name}
+                  onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Price
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={editData.price}
+                  onChange={(e) => setEditData({ ...editData, price: parseFloat(e.target.value) })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  rows={4}
+                  value={editData.description}
+                  onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Image URL
+                </label>
+                <input
+                  type="url"
+                  required
+                  value={editData.image_url}
+                  onChange={(e) => setEditData({ ...editData, image_url: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setEditingProduct(null)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50"
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

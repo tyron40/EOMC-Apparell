@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { uploadImage } from '../lib/storage';
 import ImagePositionControls from './ImagePositionControls';
 import ImageUploadWithResize from './ImageUploadWithResize';
+import QuickViewModal from './QuickViewModal';
 
 interface ProductCardProps {
   product: Product;
@@ -18,6 +19,7 @@ export default function ProductCard({ product, onUpdate }: ProductCardProps) {
   const { user } = useAuth();
   const { isEditMode } = useEditMode();
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showQuickView, setShowQuickView] = useState(false);
   const [editData, setEditData] = useState({
     name: product.name,
     price: product.price,
@@ -46,6 +48,14 @@ export default function ProductCard({ product, onUpdate }: ProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
     setShowEditModal(true);
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey) {
+      return;
+    }
+    e.preventDefault();
+    setShowQuickView(true);
   };
 
   const handleImageUpload = async (file: File, shouldResize: boolean) => {
@@ -103,8 +113,12 @@ export default function ProductCard({ product, onUpdate }: ProductCardProps) {
 
   return (
     <>
-      <Link to={`/product/${product.slug}`} className="group block">
-        <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      <Link
+        to={`/product/${product.slug}`}
+        className="group block"
+        onClick={handleCardClick}
+      >
+        <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
           <div className="aspect-square overflow-hidden bg-gray-100 relative">
             <img
               src={product.image_url}
@@ -131,6 +145,13 @@ export default function ProductCard({ product, onUpdate }: ProductCardProps) {
           </div>
         </div>
       </Link>
+
+      {showQuickView && (
+        <QuickViewModal
+          product={product}
+          onClose={() => setShowQuickView(false)}
+        />
+      )}
 
       {showEditModal && (
         <div

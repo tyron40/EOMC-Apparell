@@ -190,7 +190,11 @@ export default function Checkout() {
                       <img
                         src={item.product?.image_url}
                         alt={item.product?.name}
-                        className="w-full h-full object-contain"
+                        className={`w-full h-full object-${item.product?.image_fit || 'contain'}`}
+                        style={{
+                          transform: `scale(${item.product?.zoom || 1}) translate(${item.product?.position_x || 0}%, ${item.product?.position_y || 0}%)`,
+                          transformOrigin: 'center center'
+                        }}
                       />
                       {item.quantity > 1 && (
                         <span className="absolute -top-1 -right-1 bg-gray-700 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
