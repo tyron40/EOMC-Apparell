@@ -138,10 +138,10 @@ export default function CustomPage() {
   };
 
   const ensureCategory = async () => {
-    if (!page) return null;
+    if (!page) return { success: false, error: 'No page data' };
 
     if (page.category_id) {
-      return page.category_id;
+      return { success: true, categoryId: page.category_id };
     }
 
     try {
@@ -159,7 +159,7 @@ export default function CustomPage() {
           .eq('id', page.id);
 
         setPage({ ...page, category_id: existingCategory.id });
-        return existingCategory.id;
+        return { success: true, categoryId: existingCategory.id };
       }
 
       const { data: newCategory, error: categoryError } = await supabase
@@ -173,7 +173,10 @@ export default function CustomPage() {
         .select()
         .single();
 
-      if (categoryError) throw categoryError;
+      if (categoryError) {
+        console.error('Category creation error:', categoryError);
+        return { success: false, error: categoryError.message };
+      }
 
       await supabase
         .from('custom_pages')
@@ -181,10 +184,10 @@ export default function CustomPage() {
         .eq('id', page.id);
 
       setPage({ ...page, category_id: newCategory.id });
-      return newCategory.id;
-    } catch (err) {
+      return { success: true, categoryId: newCategory.id };
+    } catch (err: any) {
       console.error('Failed to create category:', err);
-      return null;
+      return { success: false, error: err.message || 'Unknown error' };
     }
   };
 
@@ -197,11 +200,13 @@ export default function CustomPage() {
       return;
     }
 
-    const categoryId = await ensureCategory();
-    if (!categoryId) {
-      setMessage({ type: 'error', text: 'Failed to create category' });
+    const categoryResult = await ensureCategory();
+    if (!categoryResult.success) {
+      setMessage({ type: 'error', text: categoryResult.error || 'Failed to create category' });
       return;
     }
+
+    const categoryId = categoryResult.categoryId!
 
     const productData = {
       name: formData.name,
@@ -293,8 +298,14 @@ export default function CustomPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {products.map((product) => (
                   <ProductCard key={product.id} product={product} onUpdate={async () => {
-                    const categoryId = page.category_id || await ensureCategory();
-                    if (categoryId) await loadProducts(categoryId);
+                    if (page.category_id) {
+                      await loadProducts(page.category_id);
+                    } else {
+                      const result = await ensureCategory();
+                      if (result.success && result.categoryId) {
+                        await loadProducts(result.categoryId);
+                      }
+                    }
                   }} />
                 ))}
               </div>
