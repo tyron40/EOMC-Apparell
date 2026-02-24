@@ -6,6 +6,8 @@ import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 import ImageUploadWithResize from './ImageUploadWithResize';
 import { uploadImage } from '../lib/storage';
+import QuickViewModal from './QuickViewModal';
+import { Product as FullProduct } from '../types';
 
 interface Product {
   id: string;
@@ -15,6 +17,14 @@ interface Product {
   image_url: string;
   price: number;
   is_featured: boolean;
+  sizes?: string[];
+  images?: string[];
+  image_fit?: 'contain' | 'cover' | 'fill';
+  position_x?: number;
+  position_y?: number;
+  zoom?: number;
+  stock_quantity?: number;
+  is_available?: boolean;
 }
 
 export default function ProductShowcase() {
@@ -23,6 +33,7 @@ export default function ProductShowcase() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -34,7 +45,7 @@ export default function ProductShowcase() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('id, name, slug, description, image_url, images, price, is_featured, sizes, image_fit, position_x, position_y, zoom, stock_quantity, is_available, category_id, low_stock_threshold, created_at')
         .eq('is_featured', true)
         .limit(6);
 
@@ -177,24 +188,34 @@ export default function ProductShowcase() {
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           {products.map((product) => (
             <div key={product.id} className="relative">
-              <Link
-                to={`/products/${product.slug}`}
+              <div
+                onClick={(e) => {
+                  if (!e.defaultPrevented) {
+                    setQuickViewProduct(product);
+                  }
+                }}
                 className="group cursor-pointer block"
               >
                 <div className="relative aspect-square overflow-hidden bg-gray-100 mb-3 sm:mb-4 rounded-lg">
                   <img
                     src={product.image_url}
                     alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className={`w-full h-full object-${product.image_fit || 'cover'} transition-transform duration-500 group-hover:scale-105`}
+                    style={{
+                      transform: `scale(${product.zoom || 1}) translate(${product.position_x || 0}%, ${product.position_y || 0}%)`,
+                      transformOrigin: 'center center'
+                    }}
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                   <button
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
+                      setQuickViewProduct(product);
                     }}
-                    className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 bg-white p-2 sm:p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg"
+                    className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 bg-white p-2 sm:p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg hover:bg-gray-50"
                     aria-label={`Add ${product.name} to cart`}
-                    title="Add to cart"
+                    title="Quick view"
                   >
                     <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
@@ -206,7 +227,7 @@ export default function ProductShowcase() {
                   )}
                   <p className="text-base sm:text-lg font-semibold mt-1">${product.price.toFixed(2)}</p>
                 </div>
-              </Link>
+              </div>
 
               {isEditMode && user?.isAdmin && (
                 <div className="absolute top-2 right-2 flex gap-2 z-10">
@@ -311,6 +332,13 @@ export default function ProductShowcase() {
             </div>
           </div>
         </div>
+      )}
+
+      {quickViewProduct && (
+        <QuickViewModal
+          product={quickViewProduct as FullProduct}
+          onClose={() => setQuickViewProduct(null)}
+        />
       )}
     </section>
   );
