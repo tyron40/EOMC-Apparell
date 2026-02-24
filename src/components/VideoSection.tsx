@@ -76,14 +76,14 @@ export default function VideoSection() {
 
   if (loading || !videoData) {
     return (
-      <section className="relative w-full h-[350px] sm:h-[450px] md:h-[550px] lg:h-[650px] overflow-hidden bg-gray-200 animate-pulse" />
+      <section className="relative w-full h-[500px] sm:h-[600px] md:h-[700px] lg:h-[800px] xl:h-[900px] overflow-hidden bg-gray-200 animate-pulse" />
     );
   }
 
   return (
     <>
       {showEditor && <VideoSectionEditor onClose={() => setShowEditor(false)} />}
-      <section className="relative w-full h-[350px] sm:h-[450px] md:h-[550px] lg:h-[650px] overflow-hidden bg-black">
+      <section className="relative w-full h-[500px] sm:h-[600px] md:h-[700px] lg:h-[800px] xl:h-[900px] overflow-hidden bg-black">
         {isEditMode && user?.isAdmin && (
           <button
             onClick={handleEditVideo}
