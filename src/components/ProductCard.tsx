@@ -168,6 +168,7 @@ export default function ProductCard({ product, onUpdate }: ProductCardProps) {
         <QuickViewModal
           product={product}
           onClose={() => setShowQuickView(false)}
+          onUpdate={onUpdate}
         />
       )}
 

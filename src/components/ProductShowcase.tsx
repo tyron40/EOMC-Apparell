@@ -338,6 +338,7 @@ export default function ProductShowcase() {
         <QuickViewModal
           product={quickViewProduct as FullProduct}
           onClose={() => setQuickViewProduct(null)}
+          onUpdate={fetchFeaturedProducts}
         />
       )}
     </section>
