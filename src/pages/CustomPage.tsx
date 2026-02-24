@@ -166,9 +166,7 @@ export default function CustomPage() {
         .from('categories')
         .insert({
           name: page.title,
-          slug: categorySlug,
-          description: `Products for ${page.title}`,
-          is_active: true
+          slug: categorySlug
         })
         .select()
         .single();
