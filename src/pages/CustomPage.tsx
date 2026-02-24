@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useParams, Navigate, Link } from 'react-router-dom';
-import { Edit3, Plus, X, Upload, CheckCircle, AlertCircle } from 'lucide-react';
+import { useParams, Navigate } from 'react-router-dom';
+import { Plus, X, Upload, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useEditMode } from '../context/EditModeContext';
@@ -217,19 +217,6 @@ export default function CustomPage() {
     <div className="min-h-screen bg-gray-50 py-8 sm:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow-sm p-6 sm:p-8 relative">
-          {isEditMode && user?.isAdmin && (
-            <Link
-              to={`/admin/settings`}
-              className="absolute top-4 right-4 p-3 bg-white hover:bg-gray-50 rounded-full shadow-lg transition-all hover:scale-110 border border-gray-200 group"
-              title="Edit Page Settings"
-            >
-              <Edit3 className="w-5 h-5 text-black" />
-              <span className="absolute right-full mr-2 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                Edit Page
-              </span>
-            </Link>
-          )}
-
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">{page.title}</h1>
 
           {page.content && (
