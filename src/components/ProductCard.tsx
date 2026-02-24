@@ -22,12 +22,18 @@ export default function ProductCard({ product, onUpdate }: ProductCardProps) {
   const [showQuickView, setShowQuickView] = useState(false);
   const [editData, setEditData] = useState({
     name: product.name,
+    description: product.description || '',
     price: product.price,
     image_url: product.image_url,
     image_fit: product.image_fit || 'contain',
     position_x: product.position_x || 0,
     position_y: product.position_y || 0,
-    zoom: product.zoom || 1.0
+    zoom: product.zoom || 1.0,
+    sizes: product.sizes || ['S', 'M', 'L', 'XL'],
+    stock_quantity: product.stock_quantity || 100,
+    low_stock_threshold: product.low_stock_threshold || 5,
+    is_featured: product.is_featured || false,
+    is_available: product.is_available !== false
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -35,12 +41,18 @@ export default function ProductCard({ product, onUpdate }: ProductCardProps) {
   useEffect(() => {
     setEditData({
       name: product.name,
+      description: product.description || '',
       price: product.price,
       image_url: product.image_url,
       image_fit: product.image_fit || 'contain',
       position_x: product.position_x || 0,
       position_y: product.position_y || 0,
-      zoom: product.zoom || 1.0
+      zoom: product.zoom || 1.0,
+      sizes: product.sizes || ['S', 'M', 'L', 'XL'],
+      stock_quantity: product.stock_quantity || 100,
+      low_stock_threshold: product.low_stock_threshold || 5,
+      is_featured: product.is_featured || false,
+      is_available: product.is_available !== false
     });
   }, [product]);
 
@@ -89,12 +101,18 @@ export default function ProductCard({ product, onUpdate }: ProductCardProps) {
         .from('products')
         .update({
           name: editData.name,
+          description: editData.description,
           price: parseFloat(editData.price.toString()),
           image_url: editData.image_url,
           image_fit: editData.image_fit,
           position_x: editData.position_x,
           position_y: editData.position_y,
-          zoom: editData.zoom
+          zoom: editData.zoom,
+          sizes: editData.sizes,
+          stock_quantity: editData.stock_quantity,
+          low_stock_threshold: editData.low_stock_threshold,
+          is_featured: editData.is_featured,
+          is_available: editData.is_available
         })
         .eq('id', product.id);
 
@@ -188,6 +206,18 @@ export default function ProductCard({ product, onUpdate }: ProductCardProps) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  value={editData.description}
+                  onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Price
                 </label>
                 <input
@@ -198,6 +228,56 @@ export default function ProductCard({ product, onUpdate }: ProductCardProps) {
                   onChange={(e) => setEditData({ ...editData, price: parseFloat(e.target.value) })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Stock Quantity
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={editData.stock_quantity}
+                    onChange={(e) => setEditData({ ...editData, stock_quantity: parseInt(e.target.value) || 0 })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Low Stock Alert
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={editData.low_stock_threshold}
+                    onChange={(e) => setEditData({ ...editData, low_stock_threshold: parseInt(e.target.value) || 0 })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={editData.is_featured}
+                    onChange={(e) => setEditData({ ...editData, is_featured: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Featured Product</span>
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={editData.is_available}
+                    onChange={(e) => setEditData({ ...editData, is_available: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Available</span>
+                </label>
               </div>
 
               <ImageUploadWithResize
